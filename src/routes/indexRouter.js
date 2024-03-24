@@ -1,56 +1,32 @@
-import { Router } from "express";
-import { userModel } from "../models/user.js";
+import cartRouter from './cartRouter.js'
+import productsRouter from './productsRouter.js'
+import userRouter from './userRouter.js'
+import chatRouter from './chatRouter.js'
+import upload from '../config/multer.js'
+import sessionRouter from './sessionRouter.js'
+import express from 'express'
+import { __dirname } from '../path.js'
 
-const sessionRouter = Router()
+const indexRouter = express.Router()
 
-sessionRouter.get('/login', async (req, res) => {
-    const { email, password } = req.body
+//Routes
+indexRouter.get('/', (req, res) => {
+    res.status(200).send("Bienvenido/a!")
+})
+indexRouter.use('/public', express.static(__dirname + '/public'))
+indexRouter.use('/api/products', productsRouter, express.static(__dirname + '/public'))
+indexRouter.use('/api/cart', cartRouter)
+indexRouter.use('/api/chat', chatRouter, express.static(__dirname + '/public'))
+indexRouter.use('/api/users', userRouter)
+indexRouter.use('/api/session', sessionRouter)
 
+indexRouter.post('/upload', upload.single('product'), (req, res) => {
     try {
-        const user = await userModel.findOne({ email: email }).lean()
-        if (user && password == user.password) {
-            req.session.email = email
-            if (user.rol == "Admin") {
-                req.session.admin = true
-                res.status(200).send("Usuario Admin logueado correctamente")
-            } else {
-                res.status(200).send("Usuario logueado correctamente")
-            }
-        } else {
-            res.status(401).send("Usuario o contraseña no validos")
-        }
+        console.log(req.file)
+        res.status(200).send("Imagen cargada correctamente")
     } catch (e) {
-        res.status(500).send("Error al loguear usuario", e)
+        res.status(500).send("Error al cargar imagen")
     }
 })
 
-sessionRouter.post('/register', async (req, res) => {
-    try {
-        const { first_name, last_name, email, password, age } = req.body
-        const findUser = await userModel.findOne({ email: email })
-        if (findUser) {
-            res.status(400).send("Ya existe un usuario con este mail")
-        } else {
-            await userModel.create({ first_name, last_name, email, age, password })
-            res.status(200).send("Usuario creado correctamente")
-        }
-
-    } catch (e) {
-        res.status(500).send("Error al registrar users: ", e)
-    }
-
-
-})
-
-sessionRouter.get('/logout', (req, res) => {
-    req.session.destroy(function (e) {
-        if (e) {
-            console.log(e)
-        } else {
-            res.status(200).redirect("/")
-        }
-
-    })
-})
-
-export default sessionRouter
+export default indexRouter

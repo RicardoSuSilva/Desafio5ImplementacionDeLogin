@@ -31,15 +31,12 @@ sessionRouter.post('/register', async (req, res) => {
         if (findUser) {
             res.status(400).send("Ya existe un usuario con este email")
         } else {
-            const resultado = await userModel.create({ first_name, last_name, email, age, password })
-            res.status(200).send("Usuario creado correctamente", JSON.stringify(resultado))
+            await userModel.create({ first_name: first_name , last_name: last_name , email: email, age: age, password: createHash(password)})
+            res.status(200).send("Usuario creado correctamente")
         }
-
     } catch (e) {
         res.status(500).send("Error al registrar users: ", e)
     }
-
-
 })
 
 sessionRouter.get('/logout', (req, res) => {
