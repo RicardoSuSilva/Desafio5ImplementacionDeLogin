@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { userModel } from "../models/user.js";
 
+
 const sessionRouter = Router()
 
 sessionRouter.get('/login', async (req, res) => {
@@ -31,7 +32,7 @@ sessionRouter.post('/register', async (req, res) => {
         if (findUser) {
             res.status(400).send("Ya existe un usuario con este email")
         } else {
-            await userModel.create({ first_name: first_name , last_name: last_name , email: email, age: age, password: createHash(password)})
+            await userModel.create({ first_name, last_name, email, password, age})
             res.status(200).send("Usuario creado correctamente")
         }
     } catch (e) {
